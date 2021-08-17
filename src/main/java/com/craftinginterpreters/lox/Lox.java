@@ -56,7 +56,7 @@ public class Lox {
         final List<Token> tokens = scanner.scanTokens();
 
         final Parser parser = new Parser(tokens);
-        Expr expr = parser.parse();
+        final Expr expr = parser.parse();
 
         if (hadError) {
             System.exit(DATA_ERROR_CODE);

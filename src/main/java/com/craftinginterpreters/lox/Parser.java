@@ -1,5 +1,6 @@
 package com.craftinginterpreters.lox;
 
+import java.io.Serial;
 import java.util.List;
 
 import static com.craftinginterpreters.lox.TokenType.*;
@@ -7,19 +8,21 @@ import static com.craftinginterpreters.lox.TokenType.*;
 public class Parser {
 
     private static class ParseError extends RuntimeException {
+        @Serial
+        private static final long serialVersionUID = 4609916498225441266L;
     }
 
     private final List<Token> tokens;
     private int current = 0;
 
-    Parser(List<Token> tokens) {
+    Parser(final List<Token> tokens) {
         this.tokens = tokens;
     }
 
     Expr parse() {
         try {
             return expression();
-        } catch (ParseError e) {
+        } catch (final ParseError e) {
             return null;
         }
     }
@@ -32,8 +35,8 @@ public class Parser {
         Expr expr = comparison();
 
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
-            Token operator = previous();
-            Expr right = comparison();
+            final Token operator = previous();
+            final Expr right = comparison();
             expr = new Expr.Binary(expr, operator, right);
         }
         return expr;
@@ -43,8 +46,8 @@ public class Parser {
         Expr expr = term();
 
         while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-            Token operator = previous();
-            Expr right = term();
+            final Token operator = previous();
+            final Expr right = term();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -55,8 +58,8 @@ public class Parser {
         Expr expr = factor();
 
         while (match(MINUS, PLUS)) {
-            Token operator = previous();
-            Expr right = factor();
+            final Token operator = previous();
+            final Expr right = factor();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -67,8 +70,8 @@ public class Parser {
         Expr expr = unary();
 
         while (match(SLASH, STAR)) {
-            Token operator = previous();
-            Expr right = unary();
+            final Token operator = previous();
+            final Expr right = unary();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -77,8 +80,8 @@ public class Parser {
 
     private Expr unary() {
         if (match(BANG, MINUS)) {
-            Token operator = previous();
-            Expr right = unary();
+            final Token operator = previous();
+            final Expr right = unary();
             return new Expr.Unary(operator, right);
         }
 
@@ -89,15 +92,19 @@ public class Parser {
         if (match(FALSE)) {
             return new Expr.Literal(false);
         }
-        if (match(TRUE)) return new Expr.Literal(true);
-        if (match(NIL)) return new Expr.Literal(null);
+        if (match(TRUE)) {
+            return new Expr.Literal(true);
+        }
+        if (match(NIL)) {
+            return new Expr.Literal(null);
+        }
 
         if (match(NUMBER, STRING)) {
             return new Expr.Literal(previous().literal());
         }
 
         if (match(LEFT_PAREN)) {
-            Expr expr = expression();
+            final Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
@@ -105,20 +112,20 @@ public class Parser {
         throw error(peek(), "Expected expression.");
     }
 
-    private Token consume(TokenType type, String message) {
+    private Token consume(final TokenType type, final String message) {
         if (check(type)) {
             return advance();
         }
         throw error(peek(), message);
     }
 
-    private ParseError error(Token token, String message) {
+    private ParseError error(final Token token, final String message) {
         Lox.error(token, message);
         return new ParseError();
     }
 
-    private boolean match(TokenType... types) {
-        for (TokenType type : types) {
+    private boolean match(final TokenType... types) {
+        for (final TokenType type : types) {
             if (check(type)) {
                 advance();
                 return true;
@@ -127,7 +134,7 @@ public class Parser {
         return false;
     }
 
-    private boolean check(TokenType type) {
+    private boolean check(final TokenType type) {
         if (isAtEnd()) {
             return false;
         }
