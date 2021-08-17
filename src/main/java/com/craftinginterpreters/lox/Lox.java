@@ -15,11 +15,15 @@ import static com.craftinginterpreters.lox.TokenType.EOF;
 public class Lox {
 
     public static final String USAGE = "Usage: jlox [script]";
+    // see "man sysexits"
     public static final int USAGE_ERROR_CODE = 64;
     public static final int DATA_ERROR_CODE = 65;
+    public static final int SOFTWARE_ERROR_CODE = 70;
     public static final String PROMPT = "> ";
     private static final Charset CHARSET = StandardCharsets.UTF_8;
     private static boolean hadError;
+    private static boolean hadRuntimeError;
+    private static final Interpreter interpreter = new Interpreter();
 
     public static void main(final String[] args) throws IOException {
         if (args.length > 1) {
@@ -61,8 +65,11 @@ public class Lox {
         if (hadError) {
             System.exit(DATA_ERROR_CODE);
         }
+        if (hadRuntimeError) {
+            System.exit(SOFTWARE_ERROR_CODE);
+        }
 
-        System.out.println(new AstPrinter().print(expr));
+        interpreter.interpret(expr);
     }
 
     static void error(final int line, final String message) {
@@ -80,5 +87,11 @@ public class Lox {
         } else {
             report(token.line(), " at '" + token.lexeme() + "'", message);
         }
+    }
+
+    public static void runtimeError(final RuntimeError error) {
+        System.err.println(error.getMessage() +
+                "\n[line " + error.token.line() + "]");
+        hadRuntimeError = true;
     }
 }
