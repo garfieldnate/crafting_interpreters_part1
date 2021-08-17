@@ -10,63 +10,75 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+import static com.craftinginterpreters.lox.TokenType.EOF;
+
 public class Lox {
 
-  public static final String USAGE = "Usage: jlox [script]";
-  public static final int USAGE_ERROR_CODE = 64;
-  public static final int DATA_ERROR_CODE = 65;
-  public static final String PROMPT = "> ";
-  private static final Charset CHARSET = StandardCharsets.UTF_8;
-  private static boolean hadError;
+    public static final String USAGE = "Usage: jlox [script]";
+    public static final int USAGE_ERROR_CODE = 64;
+    public static final int DATA_ERROR_CODE = 65;
+    public static final String PROMPT = "> ";
+    private static final Charset CHARSET = StandardCharsets.UTF_8;
+    private static boolean hadError;
 
-  public static void main(final String[] args) throws IOException {
-    if (args.length > 1) {
-      System.out.println(Lox.USAGE);
-      System.exit(USAGE_ERROR_CODE);
-    } else if (args.length == 1) {
-      runFile(Paths.get(args[0]));
-    } else {
-      runPrompt();
+    public static void main(final String[] args) throws IOException {
+        if (args.length > 1) {
+            System.out.println(Lox.USAGE);
+            System.exit(USAGE_ERROR_CODE);
+        } else if (args.length == 1) {
+            runFile(Paths.get(args[0]));
+        } else {
+            runPrompt();
+        }
     }
-  }
 
-  private static void runPrompt() throws IOException {
-    final InputStreamReader input = new InputStreamReader(System.in);
-    final BufferedReader reader = new BufferedReader(input);
-    while (true) {
-      System.out.print(PROMPT);
-      final String line = reader.readLine();
-      if (line == null) {
-        break;
-      }
-      run(line);
+    private static void runPrompt() throws IOException {
+        final InputStreamReader input = new InputStreamReader(System.in);
+        final BufferedReader reader = new BufferedReader(input);
+        while (true) {
+            System.out.print(PROMPT);
+            final String line = reader.readLine();
+            if (line == null) {
+                break;
+            }
+            run(line);
+        }
     }
-  }
 
-  private static void runFile(final Path file) throws IOException {
-    final byte[] bytes = Files.readAllBytes(file);
-    run(new String(bytes, CHARSET));
-    hadError = false;
-  }
-
-  private static void run(final String source) {
-    final Scanner scanner = new Scanner(source);
-    final List<Token> tokens = scanner.scanTokens();
-
-    if (hadError) {
-      System.exit(DATA_ERROR_CODE);
+    private static void runFile(final Path file) throws IOException {
+        final byte[] bytes = Files.readAllBytes(file);
+        run(new String(bytes, CHARSET));
+        hadError = false;
     }
-    for (final Token token : tokens) {
-      System.out.println(token);
+
+    private static void run(final String source) {
+        final Scanner scanner = new Scanner(source);
+        final List<Token> tokens = scanner.scanTokens();
+
+        final Parser parser = new Parser(tokens);
+        Expr expr = parser.parse();
+
+        if (hadError) {
+            System.exit(DATA_ERROR_CODE);
+        }
+
+        System.out.println(new AstPrinter().print(expr));
     }
-  }
 
-  static void error(final int line, final String message) {
-    report(line, "", message);
-  }
+    static void error(final int line, final String message) {
+        report(line, "", message);
+    }
 
-  private static void report(final int line, final String where, final String message) {
-    System.err.println("[Line " + line + "] Error" + where + ": " + message);
-    hadError = true;
-  }
+    private static void report(final int line, final String where, final String message) {
+        System.err.println("[Line " + line + "] Error" + where + ": " + message);
+        hadError = true;
+    }
+
+    static void error(final Token token, final String message) {
+        if (token.type() == EOF) {
+            report(token.line(), " at end", message);
+        } else {
+            report(token.line(), " at '" + token.lexeme() + "'", message);
+        }
+    }
 }
