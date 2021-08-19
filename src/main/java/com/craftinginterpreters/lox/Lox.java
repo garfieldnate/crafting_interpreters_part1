@@ -60,7 +60,7 @@ public class Lox {
         final List<Token> tokens = scanner.scanTokens();
 
         final Parser parser = new Parser(tokens);
-        final Expr expr = parser.parse();
+        final List<Stmt> statements = parser.parse();
 
         if (hadError) {
             System.exit(DATA_ERROR_CODE);
@@ -69,7 +69,7 @@ public class Lox {
             System.exit(SOFTWARE_ERROR_CODE);
         }
 
-        interpreter.interpret(expr);
+        interpreter.interpret(statements);
     }
 
     static void error(final int line, final String message) {

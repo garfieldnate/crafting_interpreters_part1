@@ -24,6 +24,10 @@ public class GenerateAst {
                 "Grouping", List.of("Expr expression"),
                 "Literal", List.of("Object value"),
                 "Unary", List.of("Token operator", "Expr right")));
+        defineAst(outputDir, "Stmt", Map.of(
+                "Expression", List.of("Expr expression"),
+                "Print", List.of("Expr expression")
+        ));
     }
 
     private static void defineAst(final Path outputDir, final String baseName, final Map<String, List<String>> types) throws IOException {

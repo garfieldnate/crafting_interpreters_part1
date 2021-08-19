@@ -1,34 +1,30 @@
 package com.craftinginterpreters.lox;
 
-public class Interpreter implements Expr.Visitor<Object> {
+import java.util.List;
 
-    void interpret(final Expr expr) {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
+
+    void interpret(final List<Stmt> statements) {
         try {
-            final Object value = evaluate(expr);
-            System.out.println(stringify(value));
-        } catch (final RuntimeError e) {
-            Lox.runtimeError(e);
+            for (final Stmt statement : statements) {
+                execute(statement);
+            }
+        } catch (final RuntimeError error) {
+            Lox.runtimeError(error);
         }
     }
 
-    private String stringify(final Object object) {
-        if (object == null) {
-            return "nil";
-        }
-        if (object instanceof Double) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
-            }
-            return text;
-        }
-
-        return object.toString();
+    private void execute(final Stmt statement) {
+        statement.accept(this);
     }
 
     @Override
     public Object visitGroupingExpr(final Expr.Grouping expr) {
         return evaluate(expr.expression);
+    }
+
+    private Object evaluate(final Expr expr) {
+        return expr.accept(this);
     }
 
     @Override
@@ -58,6 +54,16 @@ public class Interpreter implements Expr.Visitor<Object> {
             return;
         }
         throw new RuntimeError(operator, "Operand must be a number.");
+    }
+
+    private boolean isTruthy(final Object object) {
+        if (object == null) {
+            return false;
+        }
+        if (object instanceof Boolean) {
+            return (boolean) object;
+        }
+        return true;
     }
 
     @Override
@@ -133,17 +139,31 @@ public class Interpreter implements Expr.Visitor<Object> {
         return a.equals(b);
     }
 
-    private Object evaluate(final Expr expr) {
-        return expr.accept(this);
+    @Override
+    public Void visitExpressionStmt(final Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
     }
 
-    private boolean isTruthy(final Object object) {
+    @Override
+    public Void visitPrintStmt(final Stmt.Print stmt) {
+        final Object value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
+    }
+
+    private String stringify(final Object object) {
         if (object == null) {
-            return false;
+            return "nil";
         }
-        if (object instanceof Boolean) {
-            return (boolean) object;
+        if (object instanceof Double) {
+            String text = object.toString();
+            if (text.endsWith(".0")) {
+                text = text.substring(0, text.length() - 2);
+            }
+            return text;
         }
-        return true;
+
+        return object.toString();
     }
 }
