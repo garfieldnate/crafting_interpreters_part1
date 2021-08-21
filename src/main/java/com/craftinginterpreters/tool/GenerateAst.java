@@ -32,7 +32,8 @@ public class GenerateAst {
                 "Expression", List.of("Expr expression"),
                 "If", List.of("Expr condition", "Stmt thenBranch", "Stmt elseBranch"),
                 "Print", List.of("Expr expression"),
-                "Var", List.of("Token name", "Expr initializer")
+                "Var", List.of("Token name", "Expr initializer"),
+                "While", List.of("Expr condition", "Stmt body")
         ));
     }
 

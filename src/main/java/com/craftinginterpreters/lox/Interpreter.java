@@ -34,8 +34,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     @Override
-    public Object visitLogicalExpr(Expr.Logical expr) {
-        Object left = evaluate(expr.left);
+    public Object visitLogicalExpr(final Expr.Logical expr) {
+        final Object left = evaluate(expr.left);
 
         if (expr.operator.type() == TokenType.OR) {
             if (isTruthy(left)) {
@@ -46,7 +46,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 return left;
             }
         }
-        
+
         return evaluate(expr.right);
     }
 
@@ -177,6 +177,14 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Void visitPrintStmt(final Stmt.Print stmt) {
         final Object value = evaluate(stmt.expression);
         System.out.println(stringify(value));
+        return null;
+    }
+
+    @Override
+    public Void visitWhileStmt(final Stmt.While stmt) {
+        while (isTruthy(evaluate(stmt.condition))) {
+            execute(stmt.body);
+        }
         return null;
     }
 
