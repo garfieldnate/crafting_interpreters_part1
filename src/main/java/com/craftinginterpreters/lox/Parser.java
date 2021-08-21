@@ -23,16 +23,53 @@ public class Parser {
     List<Stmt> parse() {
         final List<Stmt> statements = new ArrayList<>();
         while (!isAtEnd()) {
-            statements.add(statement());
+            statements.add(declaration());
         }
         return statements;
+    }
+
+    private Stmt declaration() {
+        try {
+            if (match(VAR)) {
+                return varDeclaration();
+            }
+
+            return statement();
+        } catch (final ParseError error) {
+            synchronize();
+            return null;
+        }
+    }
+
+    private Stmt varDeclaration() {
+        final Token name = consume(IDENTIFIER, "Expect variable name.");
+
+        Expr initializer = null;
+        if (match(EQUAL)) {
+            initializer = expression();
+        }
+
+        consume(SEMICOLON, "Expect ';' after variable declaration.");
+        return new Stmt.Var(name, initializer);
     }
 
     private Stmt statement() {
         if (match(PRINT)) {
             return printStatement();
         }
+        if (match(LEFT_BRACE)) {
+            return new Stmt.Block(block());
+        }
         return expressionStatement();
+    }
+
+    private List<Stmt> block() {
+        final List<Stmt> statements = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            statements.add(declaration());
+        }
+        consume(RIGHT_BRACE, "Expect '}' after block");
+        return statements;
     }
 
     private Stmt printStatement() {
@@ -49,7 +86,24 @@ public class Parser {
     }
 
     private Expr expression() {
-        return equality();
+        return assignment();
+    }
+
+    private Expr assignment() {
+        final Expr expr = equality();
+
+        if (match(EQUAL)) {
+            final Token equals = previous();
+            final Expr value = assignment();
+
+            if (expr instanceof Expr.Variable var) {
+                return new Expr.Assign(var.name, value);
+            }
+
+            error(equals, "Invalid assignment target");
+        }
+
+        return expr;
     }
 
     private Expr equality() {
@@ -128,6 +182,10 @@ public class Parser {
             final Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
+        }
+
+        if (match(IDENTIFIER)) {
+            return new Expr.Variable(previous());
         }
 
         throw error(peek(), "Expected expression.");

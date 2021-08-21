@@ -20,13 +20,17 @@ public class GenerateAst {
         }
         final Path outputDir = Paths.get(args[0]);
         defineAst(outputDir, "Expr", Map.of(
+                "Assign", List.of("Token name", "Expr value"),
                 "Binary", List.of("Expr left", "Token operator", "Expr right"),
                 "Grouping", List.of("Expr expression"),
                 "Literal", List.of("Object value"),
-                "Unary", List.of("Token operator", "Expr right")));
+                "Unary", List.of("Token operator", "Expr right"),
+                "Variable", List.of("Token name")));
         defineAst(outputDir, "Stmt", Map.of(
+                "Block", List.of("List<Stmt> statements"),
                 "Expression", List.of("Expr expression"),
-                "Print", List.of("Expr expression")
+                "Print", List.of("Expr expression"),
+                "Var", List.of("Token name", "Expr initializer")
         ));
     }
 
