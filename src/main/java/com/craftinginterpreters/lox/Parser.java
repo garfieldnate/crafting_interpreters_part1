@@ -54,6 +54,9 @@ public class Parser {
     }
 
     private Stmt statement() {
+        if (match(IF)) {
+            return ifStatement();
+        }
         if (match(PRINT)) {
             return printStatement();
         }
@@ -63,6 +66,26 @@ public class Parser {
         return expressionStatement();
     }
 
+    private Stmt ifStatement() {
+        consume(LEFT_PAREN, "Expect '(' after 'if'");
+        final Expr condition = expression();
+        consume(RIGHT_PAREN, "Expect ')' after 'if' condition");
+
+        final Stmt thenBranch = statement();
+        Stmt elseBranch = null;
+        if (match(ELSE)) {
+            elseBranch = statement();
+        }
+
+        return new Stmt.If(condition, thenBranch, elseBranch);
+    }
+
+    private Stmt printStatement() {
+        final Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after statement");
+        return new Stmt.Print(value);
+    }
+
     private List<Stmt> block() {
         final List<Stmt> statements = new ArrayList<>();
         while (!check(RIGHT_BRACE) && !isAtEnd()) {
@@ -70,12 +93,6 @@ public class Parser {
         }
         consume(RIGHT_BRACE, "Expect '}' after block");
         return statements;
-    }
-
-    private Stmt printStatement() {
-        final Expr value = expression();
-        consume(SEMICOLON, "Expect ';' after statement");
-        return new Stmt.Print(value);
     }
 
 
@@ -90,7 +107,7 @@ public class Parser {
     }
 
     private Expr assignment() {
-        final Expr expr = equality();
+        final Expr expr = or();
 
         if (match(EQUAL)) {
             final Token equals = previous();
@@ -101,6 +118,30 @@ public class Parser {
             }
 
             error(equals, "Invalid assignment target");
+        }
+
+        return expr;
+    }
+
+    private Expr or() {
+        Expr expr = and();
+
+        while (match(OR)) {
+            final Token operator = previous();
+            final Expr right = and();
+            expr = new Expr.Logical(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr and() {
+        Expr expr = equality();
+
+        while (match(AND)) {
+            final Token operator = previous();
+            final Expr right = equality();
+            expr = new Expr.Logical(expr, operator, right);
         }
 
         return expr;

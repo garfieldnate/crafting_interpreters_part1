@@ -24,11 +24,13 @@ public class GenerateAst {
                 "Binary", List.of("Expr left", "Token operator", "Expr right"),
                 "Grouping", List.of("Expr expression"),
                 "Literal", List.of("Object value"),
+                "Logical", List.of("Expr left", "Token operator", "Expr right"),
                 "Unary", List.of("Token operator", "Expr right"),
                 "Variable", List.of("Token name")));
         defineAst(outputDir, "Stmt", Map.of(
                 "Block", List.of("List<Stmt> statements"),
                 "Expression", List.of("Expr expression"),
+                "If", List.of("Expr condition", "Stmt thenBranch", "Stmt elseBranch"),
                 "Print", List.of("Expr expression"),
                 "Var", List.of("Token name", "Expr initializer")
         ));
