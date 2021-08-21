@@ -22,6 +22,7 @@ public class GenerateAst {
         defineAst(outputDir, "Expr", Map.of(
                 "Assign", List.of("Token name", "Expr value"),
                 "Binary", List.of("Expr left", "Token operator", "Expr right"),
+                "Call", List.of("Expr callee", "Token paren", "List<Expr> arguments"),
                 "Grouping", List.of("Expr expression"),
                 "Literal", List.of("Object value"),
                 "Logical", List.of("Expr left", "Token operator", "Expr right"),
@@ -30,8 +31,10 @@ public class GenerateAst {
         defineAst(outputDir, "Stmt", Map.of(
                 "Block", List.of("List<Stmt> statements"),
                 "Expression", List.of("Expr expression"),
+                "Function", List.of("Token name", "List<Token> params", "List<Stmt> body"),
                 "If", List.of("Expr condition", "Stmt thenBranch", "Stmt elseBranch"),
                 "Print", List.of("Expr expression"),
+                "Return", List.of("Token keyword", "Expr value"),
                 "Var", List.of("Token name", "Expr initializer"),
                 "While", List.of("Expr condition", "Stmt body")
         ));
