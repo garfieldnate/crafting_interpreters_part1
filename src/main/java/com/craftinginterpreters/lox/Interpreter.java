@@ -61,8 +61,8 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         if (object == null) {
             return false;
         }
-        if (object instanceof Boolean) {
-            return (boolean) object;
+        if (object instanceof Boolean b) {
+            return b;
         }
         return true;
     }
@@ -102,10 +102,10 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
                 yield (double) left * (double) right;
             }
             case PLUS -> {
-                if (left instanceof Double && right instanceof Double) {
-                    yield (double) left + (double) right;
-                } else if (left instanceof String && right instanceof String) {
-                    yield left + (String) right;
+                if (left instanceof Double d1 && right instanceof Double d2) {
+                    yield d1 + d2;
+                } else if (left instanceof String s1 && right instanceof String s2) {
+                    yield s1 + s2;
                 } else {
                     throw new RuntimeError(expr.operator,
                             "Operands must be two numbers or two strings.");
