@@ -62,14 +62,25 @@ public class Lox {
         final Parser parser = new Parser(tokens);
         final List<Stmt> statements = parser.parse();
 
+        // stop if there was a parse error
         if (hadError) {
             System.exit(DATA_ERROR_CODE);
         }
-        if (hadRuntimeError) {
-            System.exit(SOFTWARE_ERROR_CODE);
+
+        final Resolver resolver = new Resolver(interpreter);
+        resolver.resolve(statements);
+
+        // stop if there was a resolution error
+        if (hadError) {
+            System.exit(DATA_ERROR_CODE);
         }
 
         interpreter.interpret(statements);
+
+        // report if an error occurred while running
+        if (hadRuntimeError) {
+            System.exit(SOFTWARE_ERROR_CODE);
+        }
     }
 
     static void error(final int line, final String message) {
