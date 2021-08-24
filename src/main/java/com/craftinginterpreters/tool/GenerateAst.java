@@ -4,9 +4,11 @@ import com.craftinginterpreters.lox.Lox;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serial;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,17 +21,27 @@ public class GenerateAst {
             System.exit(Lox.USAGE_ERROR_CODE);
         }
         final Path outputDir = Paths.get(args[0]);
-        defineAst(outputDir, "Expr", Map.of(
-                "Assign", List.of("Token name", "Expr value"),
-                "Binary", List.of("Expr left", "Token operator", "Expr right"),
-                "Call", List.of("Expr callee", "Token paren", "List<Expr> arguments"),
-                "Grouping", List.of("Expr expression"),
-                "Literal", List.of("Object value"),
-                "Logical", List.of("Expr left", "Token operator", "Expr right"),
-                "Unary", List.of("Token operator", "Expr right"),
-                "Variable", List.of("Token name")));
+        defineAst(outputDir, "Expr", new HashMap<>() {
+            @Serial
+            private static final long serialVersionUID = -994542516729871375L;
+
+            {
+                put("Assign", List.of("Token name", "Expr value"));
+                put("Binary", List.of("Expr left", "Token operator", "Expr right"));
+                put("Call", List.of("Expr callee", "Token paren", "List<Expr> arguments"));
+                put("Get", List.of("Expr object", "Token name"));
+                put("Grouping", List.of("Expr expression"));
+                put("Literal", List.of("Object value"));
+                put("Logical", List.of("Expr left", "Token operator", "Expr right"));
+                put("Set", List.of("Expr object", "Token name", "Expr value"));
+                put("This", List.of("Token keyword"));
+                put("Unary", List.of("Token operator", "Expr right"));
+                put("Variable", List.of("Token name"));
+            }
+        });
         defineAst(outputDir, "Stmt", Map.of(
                 "Block", List.of("List<Stmt> statements"),
+                "Class", List.of("Token name", "List<Stmt.Function> methods"),
                 "Expression", List.of("Expr expression"),
                 "Function", List.of("Token name", "List<Token> params", "List<Stmt> body"),
                 "If", List.of("Expr condition", "Stmt thenBranch", "Stmt elseBranch"),

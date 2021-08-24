@@ -11,7 +11,17 @@ public class AstPrinter implements Expr.Visitor<String> {
     }
 
     @Override
+    public String visitSetExpr(final Expr.Set expr) {
+        return null;
+    }
+
+    @Override
     public String visitVariableExpr(final Expr.Variable expr) {
+        return null;
+    }
+
+    @Override
+    public String visitGetExpr(final Expr.Get expr) {
         return null;
     }
 
@@ -40,6 +50,11 @@ public class AstPrinter implements Expr.Visitor<String> {
 
     @Override
     public String visitLogicalExpr(final Expr.Logical expr) {
+        return null;
+    }
+
+    @Override
+    public String visitThisExpr(final Expr.This expr) {
         return null;
     }
 

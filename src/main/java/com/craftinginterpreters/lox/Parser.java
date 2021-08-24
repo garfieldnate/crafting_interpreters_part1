@@ -14,7 +14,7 @@ public class Parser {
     }
 
     private static enum FunctionKind {
-        FUNCTION;
+        FUNCTION, METHOD;
 
         @Override
         public String toString() {
@@ -39,6 +39,9 @@ public class Parser {
 
     private Stmt declaration() {
         try {
+            if (match(CLASS)) {
+                return classDeclaration();
+            }
             if (match(FUN)) {
                 return function(FunctionKind.FUNCTION);
             }
@@ -53,7 +56,21 @@ public class Parser {
         }
     }
 
-    private Stmt function(final FunctionKind kind) {
+    private Stmt classDeclaration() {
+        final Token name = consume(IDENTIFIER, "Expect class name");
+        consume(LEFT_BRACE, "Expect '{' before class body");
+
+        final List<Stmt.Function> methods = new ArrayList<>();
+        while (!check(RIGHT_BRACE) && !isAtEnd()) {
+            methods.add(function(FunctionKind.METHOD));
+        }
+
+        consume(RIGHT_BRACE, "Expect '}' after class body.");
+
+        return new Stmt.Class(name, methods);
+    }
+
+    private Stmt.Function function(final FunctionKind kind) {
         final Token name = consume(IDENTIFIER, "Expect " + kind + " name");
         consume(LEFT_PAREN, "Expect '(' after " + kind + " name.");
         final List<Token> parameters = new ArrayList<>();
@@ -222,6 +239,8 @@ public class Parser {
 
             if (expr instanceof Expr.Variable var) {
                 return new Expr.Assign(var.name, value);
+            } else if (expr instanceof Expr.Get get) {
+                return new Expr.Set(get.object, get.name, value);
             }
 
             error(equals, "Invalid assignment target");
@@ -317,6 +336,9 @@ public class Parser {
         while (true) {
             if (match(LEFT_PAREN)) {
                 expr = finishCall(expr);
+            } else if (match(DOT)) {
+                final Token name = consume(IDENTIFIER, "Expect property name after '.'");
+                expr = new Expr.Get(expr, name);
             } else {
                 break;
             }
@@ -361,6 +383,10 @@ public class Parser {
             final Expr expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
+        }
+
+        if (match(THIS)) {
+            return new Expr.This(previous());
         }
 
         if (match(IDENTIFIER)) {
